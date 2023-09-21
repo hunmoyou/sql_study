@@ -89,10 +89,10 @@ FROM employees;
 문제 2.                                 
 EMPLOYEES 테이블에서 phone_number컬럼은 ###.###.####형태로 저장되어 있다
 여기서 처음 세 자리 숫자 대신 서울 지역변호 (02)를 붙여 (02).###.####  02#######
-전화 번호를 출력하도록 쿼리를 작성하세요. (CONCAT, SUBSTR, LENGTH 사용)
+전화 번호를 출력하도록 쿼리를 작성하세요. (CONCAT, SUBSTR,)
 */
 SELECT
-    SUBSTR(phone_number, 1,3)
+    CONCAT('(02)',SUBSTR(phone_number, 4))
 FROM employees;
 
 /*
@@ -106,7 +106,7 @@ EMPLOYEES 테이블에서 JOB_ID가 it_prog인 사원의 이름(first_name)과 급여(salary)를
 */
 SELECT
      RPAD(SUBSTR(first_name, 1,3),10,'*') As name,
-     salary
+     LPAD(salary,10,'*')
 FROM employees
-WHERE JOB_ID ='IT_PROG';
+WHERE LOWER(JOB_ID) ='it_prog';
 
