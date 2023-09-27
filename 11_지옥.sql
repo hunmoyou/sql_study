@@ -1,6 +1,8 @@
 CREATE TABLE DEPTS AS 
     (SELECT department_id, department_name, manager_id, location_id
     FROM departments);
+
+-- 문제 1
 UPDATE DEPTS
     SET department_name = '개발', manager_id = null, location_id =1800  
     WHERE department_id = 280;
@@ -68,7 +70,7 @@ WHERE manager_id  IS NOT NULL;
 MERGE INTO DEPTS a
     USING 
      (SELECT * FROM departments) b
-    ON (a.department_id = b.department_id)
+    ON (a.department_id = b.department_id) -- ON 조건식이 밑에 WHEN MATCHED THEN에서 업데이트 되면 에러가 된다.
 WHEN MATCHED THEN
     UPDATE SET
         a.department_name = b.department_name,
@@ -79,6 +81,8 @@ WHEN NOT MATCHED THEN
     INSERT VALUES
     (b.department_id, b.department_name,
         b.manager_id, b.location_id);
+        
+SELECT * FROM DEPTS;
 
 --문제 5-1
 CREATE TABLE jobs_it AS
@@ -99,12 +103,13 @@ INSERT INTO jobs_it
     (job_id, job_title, min_salary, max_salary)
     VALUES
     ('SEC_DEV', '보안개발팀', 6000, 19000);
-    
+
+--문제 5-4  
 MERGE INTO jobs_it aa
     USING (SELECT * FROM jobs 
-            WHERE min_salary > 6000) j
+            WHERE min_salary > 6000) j  --이거 5000
     ON
-        (aa.job_id = j.job_id)
+        (aa.job_id = j.job_id)  --병합의 조건
 WHEN MATCHED THEN
     UPDATE SET
         aa.min_salary = j.min_salary,
@@ -112,3 +117,4 @@ WHEN MATCHED THEN
 WHEN NOT MATCHED THEN 
     INSERT VALUES
     (j.job_id, j.job_title, j.min_salary, j.max_salary);
+   

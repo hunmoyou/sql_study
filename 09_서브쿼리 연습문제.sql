@@ -184,3 +184,87 @@ SELECT
     )As country_name
 FROM locations loc
 ORDER BY country_name ASC;
+
+/*
+문제 12. 
+employees테이블, departments테이블을 left조인 hire_date를 오름차순 기준으로 
+1-10번째 데이터만 출력합니다.
+조건) rownum을 적용하여 번호, 직원아이디, 이름, 전화번호, 입사일, 
+부서아이디, 부서이름 을 출력합니다.
+조건) hire_date를 기준으로 오름차순 정렬 되어야 합니다. rownum이 틀어지면 안됩니다.
+*/
+
+SELECT * FROM
+(
+    SELECT ROWNUM As rn, tbl.*
+        FROM
+        (
+        SELECT
+             e.employee_id, e.first_name, e.phone_number, e.hire_date, d.department_id, d.department_name
+        FROM employees e
+        LEFT JOIN departments d
+        ON e.department_id = d.department_id
+        ORDER BY hire_date ASC
+        ) tbl
+    )
+WHERE rn BETWEEN 1 AND 10;
+/*
+문제 13. 
+--EMPLOYEES 와 DEPARTMENTS 테이블에서 JOB_ID가 SA_MAN 사원의 정보의 LAST_NAME, JOB_ID, 
+DEPARTMENT_ID,DEPARTMENT_NAME을 출력하세요.
+*/
+SELECT 
+    e.last_name, e.job_id, d.department_id, d.department_name
+FROM employees e
+JOIN departments d
+ON e.department_id = d.department_id
+WHERE job_id = 'SA_MAN';
+
+SELECT
+    *
+FROM employees WHERE department_id = (SELECT last_name, job_id, department_id, department_name 
+                    FROM departments WHERE job_id = 'SA_MAN'); --이건 난 몰라
+                    
+/*
+문제 14
+--DEPARTMENT테이블에서 각 부서의 ID, NAME, MANAGER_ID와 부서에 속한 인원수를 출력하세요.
+--인원수 기준 내림차순 정렬하세요.
+--사람이 없는 부서는 출력하지 뽑지 않습니다.
+*/
+SELECT 
+    d.department_id, d.department_name, d.manager_id,
+    (
+    SELECT
+        COUNT(*)
+    FROM employees e
+    WHERE e.department_id = d.department_id
+    ) As 인원수
+      
+    FROM departments d;   
+    
+    
+SELECT
+     d.department_id, d.department_name, d.manager_id,
+     COUNT(*) As 사원수
+FROM departments d
+JOIN employees e
+ON d.department_id = e.department_id
+GROUP BY  d.department_id, d.department_name, d.manager_id;
+
+/*
+문제 15
+--부서에 대한 정보 전부와, 주소, 우편번호, 부서별 평균 연봉을 구해서 출력하세요.
+--부서별 평균이 없으면 0으로 출력하세요.
+*/
+
+SELECT
+    
+    AVG(salary)
+    FROM departments d
+
+
+/*
+문제 16
+-문제 15 결과에 대해 DEPARTMENT_ID기준으로 내림차순 정렬해서 
+ROWNUM을 붙여 1-10 데이터 까지만 출력하세요.
+*/
