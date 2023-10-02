@@ -193,6 +193,20 @@ employees테이블, departments테이블을 left조인 hire_date를 오름차순 기준으로
 부서아이디, 부서이름 을 출력합니다.
 조건) hire_date를 기준으로 오름차순 정렬 되어야 합니다. rownum이 틀어지면 안됩니다.
 */
+SELECT * FROM
+(
+    SELECT ROWNUM AS rn, a.*
+        FROM
+        (
+        SELECT 
+            e.employee_id, e.first_name, e.phone_number,
+            e.hire_date, d.department_id, d.department_name
+        FROM employees e LEFT JOIN departments d
+        ON e.department_id = d.department_id
+        ORDER BY hire_date ASC
+        ) a
+   ) 
+WHERE rn > 0 AND rn <= 10;
 
 SELECT * FROM
 (
@@ -221,10 +235,18 @@ ON e.department_id = d.department_id
 WHERE job_id = 'SA_MAN';
 
 SELECT
-    *
-FROM employees WHERE department_id = (SELECT last_name, job_id, department_id, department_name 
-                    FROM departments WHERE job_id = 'SA_MAN'); --이건 난 몰라
-                    
+    tbl.*, d.department_name
+FROM
+    (
+    SELECT 
+        last_name, job_id, department_id
+    FROM employees 
+    WHERE job_id = 'SA_MAN'   
+    )tbl
+JOIN departments d
+ON tbl.department_id = d.department_id;
+    
+    
 /*
 문제 14
 --DEPARTMENT테이블에서 각 부서의 ID, NAME, MANAGER_ID와 부서에 속한 인원수를 출력하세요.
@@ -233,13 +255,38 @@ FROM employees WHERE department_id = (SELECT last_name, job_id, department_id, d
 */
 SELECT 
     d.department_id, d.department_name, d.manager_id,
+    a.total
+FROM departments d
+JOIN
+    (
+    SELECT 
+        department_id, COUNT(*) AS total
+    FROM employees 
+    GROUP BY department_id
+    )a
+ON d.department_id = a.department_id
+ORDER BY a.total DESC;
+
+SELECT 
+     d.department_id, d.department_name, d.manager_id,
+     (
+        SELECT
+            COUNT(*) 
+        FROM employees e
+        WHERE e.department_id = d.department_id
+    ) As total
+FROM departments d
+WHERE d.manager_id IS NOT NULL
+ORDER BY total DESC;
+
+SELECT 
+    d.department_id, d.department_name, d.manager_id,
     (
     SELECT
         COUNT(*)
     FROM employees e
     WHERE e.department_id = d.department_id
-    ) As 인원수
-      
+    ) As 인원수     
     FROM departments d;   
     
     
@@ -256,15 +303,63 @@ GROUP BY  d.department_id, d.department_name, d.manager_id;
 --부서에 대한 정보 전부와, 주소, 우편번호, 부서별 평균 연봉을 구해서 출력하세요.
 --부서별 평균이 없으면 0으로 출력하세요.
 */
-
 SELECT
-    
-    AVG(salary)
-    FROM departments d
+    d.*, 
+    loc.street_address, loc.postal_code,
+    NVL(tbl.result, 0) As result
+FROM departments d
+JOIN locations loc
+ON d.location_id = loc.location_id
+LEFT JOIN 
+    (
+    SELECT
+        department_id,
+        TRUNC(AVG(salary), 0) AS result
+    FROM employees
+    GROUP BY department_id
+    )tbl
+ON d.department_id = tbl.department_id;
 
-
+SELECT 
+    d.*,
+    loc.street_address, loc.postal_code,
+    NVL(
+        (   
+        SELECT TRUNC(AVG(e.salary), 0)
+        FROM employees e
+        WHERE e.department_id = d.department_id
+    ),
+    0) As 부서별평균급여
+FROM departments d
+JOIN locations loc
+ON d.department_id = loc.department_id;
 /*
 문제 16
 -문제 15 결과에 대해 DEPARTMENT_ID기준으로 내림차순 정렬해서 
 ROWNUM을 붙여 1-10 데이터 까지만 출력하세요.
 */
+SELECT * FROM
+    (
+        SELECT ROWNUM AS rn, tbl2.*
+        FROM
+        (
+        SELECT
+            d.*, 
+            loc.street_address, loc.postal_code,
+            NVL(tbl.result, 0) As result
+        FROM departments d
+        JOIN locations loc
+        ON d.location_id = loc.location_id
+        LEFT JOIN 
+            (
+            SELECT
+                department_id,
+                TRUNC(AVG(salary), 0) AS result
+            FROM employees
+            GROUP BY department_id
+            )tbl
+        ON d.department_id = tbl.department_id
+        ORDER BY d.department_id DESC
+        )tbl2
+    )
+    WHERE rn > 0 AND rn <= 10;
