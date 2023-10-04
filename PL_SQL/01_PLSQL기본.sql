@@ -33,6 +33,8 @@ BEGIN
      DBMS_OUTPUT.put_line('A: ' || TO_CHAR(A));
 END;
 
+
+
 /*
 - DML문
 DDL문은 사용이 불가능하고, 일반적으로 SQL문의 SELECT 등을 사용하는데, 
